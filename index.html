@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HMJ IT — Memory Challenge</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+  :root {
+    --navy: #0a0e1a;
+    --blue-deep: #0d1b3e;
+    --blue: #1a3a8f;
+    --blue-bright: #2d6aff;
+    --blue-glow: #4d9fff;
+    --gold: #c9922a;
+    --gold-light: #f0c060;
+    --gold-glow: #ffe08a;
+    --white: #e8f0ff;
+    --gray: #6a7fa8;
+    --card-back: #0d1b3e;
+    --success: #00e5a0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(45,106,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45,106,255,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -40%;
+    left: -20%;
+    width: 80vw;
+    height: 80vw;
+    background: radial-gradient(circle, rgba(29,58,143,0.18) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+    animation: orb-drift 12s ease-in-out infinite alternate;
+  }
+
+  @keyframes orb-drift {
+    from { transform: translate(0,0); }
+    to   { transform: translate(8vw, 5vw); }
+  }
+
+  .screen {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .screen.active { display: flex; }
+
+  .badge {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 20px rgba(201,146,42,0.5), 0 0 60px rgba(201,146,42,0.15);
+    object-fit: cover;
+    margin-bottom: 18px;
+    animation: badge-pulse 3s ease-in-out infinite;
+  }
+  @keyframes badge-pulse {
+    0%,100% { box-shadow: 0 0 20px rgba(201,146,42,0.5), 0 0 60px rgba(201,146,42,0.15); }
+    50%      { box-shadow: 0 0 30px rgba(201,146,42,0.8), 0 0 80px rgba(201,146,42,0.3); }
+  }
+
+  .title-main {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-align: center;
+    background: linear-gradient(135deg, var(--gold-light), var(--white), var(--blue-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .title-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .divider {
+    width: 200px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 10px auto 8px;
+  }
+
+  .btn {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 14px 38px;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    transition: all 0.25s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+    color: var(--white);
+    box-shadow: 0 0 20px rgba(45,106,255,0.4), 0 4px 15px rgba(0,0,0,0.4);
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 35px rgba(45,106,255,0.7), 0 8px 25px rgba(0,0,0,0.5);
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    box-shadow: 0 0 20px rgba(201,146,42,0.4), 0 4px 15px rgba(0,0,0,0.4);
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 35px rgba(240,192,96,0.7), 0 8px 25px rgba(0,0,0,0.5);
+  }
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    pointer-events: none;
+  }
+
+  /* ─── INTRO ─── */
+  #intro .desc {
+    max-width: 440px;
+    text-align: center;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--gray);
+    margin-bottom: 32px;
+  }
+  #intro .desc span { color: var(--blue-glow); font-weight: 700; }
+
+  /* ─── HUD ─── */
+  .hud {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .hud-item {
+    text-align: center;
+    background: rgba(13,27,62,0.8);
+    border: 1px solid rgba(45,106,255,0.3);
+    border-radius: 8px;
+    padding: 10px 22px;
+    backdrop-filter: blur(6px);
+  }
+  .hud-label { font-size: 0.65rem; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; font-weight: 700; }
+  .hud-value { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--white); margin-top: 2px; }
+
+  /* ─── CARD GRID ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    max-width: 600px;
+    width: 100%;
+  }
+  @media (max-width: 480px) {
+    .card-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  }
+
+  .card { aspect-ratio: 3/4; position: relative; cursor: pointer; perspective: 900px; }
+  .card-inner {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+    border-radius: 10px;
+  }
+  .card.flipped .card-inner, .card.matched .card-inner { transform: rotateY(180deg); }
+  .card-face {
+    position: absolute; inset: 0;
+    border-radius: 10px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+  .card-back {
+    background: linear-gradient(145deg, var(--blue-deep), var(--blue));
+    border: 1.5px solid rgba(45,106,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+  }
+  .card-back::before {
+    content: ''; position: absolute; inset: 6px;
+    border: 1px dashed rgba(45,106,255,0.3); border-radius: 6px;
+  }
+  .card-back-logo {
+    font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 900;
+    color: rgba(77,159,255,0.5); letter-spacing: 0.1em; text-align: center; line-height: 1.3;
+  }
+  .card-front {
+    transform: rotateY(180deg);
+    border: 2px solid rgba(45,106,255,0.6);
+    box-shadow: 0 0 16px rgba(45,106,255,0.35), 0 4px 18px rgba(0,0,0,0.5);
+  }
+  .card-front img { width: 100%; height: 100%; object-fit: contain; display: block; background: #0d1b3e; }
+  .card.matched .card-front {
+    border-color: var(--gold);
+    box-shadow: 0 0 22px rgba(201,146,42,0.6), 0 4px 18px rgba(0,0,0,0.5);
+  }
+  .card.matched .card-front::after {
+    content: '✓'; position: absolute; top: 6px; right: 8px;
+    font-size: 1rem; color: var(--gold-light); font-weight: 900;
+    text-shadow: 0 0 8px rgba(240,192,96,0.8);
+  }
+  .card.shake { animation: card-shake 0.4s ease; }
+  @keyframes card-shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  /* ─── FOLLOW GATE ─── */
+  .gate-box {
+    background: rgba(13,27,62,0.9);
+    border: 1px solid var(--gold);
+    border-radius: 18px;
+    padding: 42px 44px;
+    text-align: center;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(201,146,42,0.15);
+    backdrop-filter: blur(12px);
+  }
+  .gate-icon { font-size: 3rem; margin-bottom: 14px; }
+  .gate-desc {
+    color: var(--gray);
+    font-size: 1rem;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+  .gate-desc strong { color: var(--blue-glow); }
+  .gate-btn-ig {
+    display: block;
+    width: 100%;
+    padding: 14px 30px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(253,29,29,0.4);
+    transition: all 0.25s;
+    margin-bottom: 14px;
+    border: none;
+    cursor: pointer;
+  }
+  .gate-btn-ig:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(253,29,29,0.5); }
+  .gate-btn-next {
+    display: block;
+    width: 100%;
+    padding: 14px 30px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(45,106,255,0.4);
+    transition: all 0.25s;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .gate-btn-next.unlocked {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .gate-btn-next.unlocked:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(45,106,255,0.6); }
+
+  /* ─── QUIZ ─── */
+  .quiz-wrap { max-width: 560px; width: 100%; }
+  .quiz-progress { display: flex; gap: 6px; margin-bottom: 24px; justify-content: center; }
+  .quiz-dot {
+    width: 28px; height: 5px; border-radius: 3px;
+    background: rgba(45,106,255,0.25); transition: background 0.3s;
+  }
+  .quiz-dot.done { background: var(--blue-bright); }
+  .quiz-dot.current { background: var(--gold); }
+
+  .quiz-card {
+    background: rgba(13,27,62,0.85);
+    border: 1px solid rgba(45,106,255,0.35);
+    border-radius: 14px;
+    padding: 30px 28px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 40px rgba(45,106,255,0.1);
+  }
+  .quiz-q-num { font-size: 0.7rem; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+  .quiz-question { font-family: 'Orbitron', sans-serif; font-size: clamp(0.85rem, 2.5vw, 1.05rem); font-weight: 700; line-height: 1.5; margin-bottom: 22px; color: var(--white); }
+  .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+  .quiz-opt {
+    background: rgba(10,14,26,0.6);
+    border: 1.5px solid rgba(45,106,255,0.3);
+    border-radius: 8px;
+    padding: 13px 18px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem; font-weight: 600; color: var(--white);
+    text-align: left; transition: all 0.2s; letter-spacing: 0.03em;
+  }
+  .quiz-opt:hover:not(.disabled) { border-color: var(--blue-bright); background: rgba(45,106,255,0.12); transform: translateX(4px); }
+  .quiz-opt.correct { border-color: var(--success); background: rgba(0,229,160,0.12); color: var(--success); }
+  .quiz-opt.wrong { border-color: #ff4d6a; background: rgba(255,77,106,0.1); color: #ff7a8a; }
+  .quiz-opt.disabled { cursor: not-allowed; }
+  .quiz-feedback { margin-top: 14px; font-size: 0.9rem; min-height: 22px; font-weight: 600; letter-spacing: 0.05em; }
+  .quiz-feedback.ok  { color: var(--success); }
+  .quiz-feedback.bad { color: #ff7a8a; }
+  .quiz-score-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 22px; font-size: 0.85rem; color: var(--gray); font-weight: 600; letter-spacing: 0.1em;
+  }
+  .quiz-score-bar span { color: var(--gold-light); }
+
+  /* ─── FINISH ─── */
+  .finish-box {
+    background: rgba(13,27,62,0.9);
+    border: 1px solid var(--gold);
+    border-radius: 18px;
+    padding: 42px 44px;
+    text-align: center;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(201,146,42,0.15), 0 0 30px rgba(45,106,255,0.1);
+    backdrop-filter: blur(12px);
+  }
+  .finish-trophy { font-size: 3rem; margin-bottom: 12px; }
+  .finish-pmb {
+    display: block; width: 100%;
+    padding: 14px 30px; border-radius: 50px;
+    background: #ff7700; color: #fff;
+    font-family: 'Orbitron', sans-serif; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.12em; text-decoration: none;
+    box-shadow: 0 4px 20px rgba(255,98,0,0.928); transition: all 0.25s;
+    margin-bottom: 10px;
+  }
+  .finish-pmb:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(214,121,63,0.928); }
+  .finish-btn-row {
+    display: flex; gap: 16px;
+    justify-content: center;
+    margin-top: 12px; margin-bottom: 14px;
+  }
+  .finish-ig {
+    flex: 1;
+    display: inline-block;
+    padding: 12px 16px; border-radius: 50px;
+    background: #0055ff; color: #fff;
+    font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.1em; text-decoration: none;
+    box-shadow: 0 4px 20px rgba(73,84,206,0.651); transition: all 0.25s; text-align: center;
+  }
+  .finish-ig:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(29,38,129,0.651); }
+
+  .result-stat { margin: 18px 0; }
+  .result-stat .label { font-size: 0.75rem; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; font-weight: 700; }
+  .result-stat .value { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900; color: var(--white); margin-top: 4px; }
+
+  /* ─── PMB GATE ─── */
+  .pmb-gate-box {
+    background: rgba(13,27,62,0.9);
+    border: 1px solid #ff7700;
+    border-radius: 18px;
+    padding: 42px 44px;
+    text-align: center;
+    max-width: 420px; width: 100%;
+    box-shadow: 0 0 80px rgba(255,119,0,0.15);
+    backdrop-filter: blur(12px);
+  }
+  .pmb-gate-desc { color: var(--gray); font-size: 1rem; line-height: 1.7; margin-bottom: 24px; }
+  .pmb-gate-desc strong { color: #ff9944; }
+  .btn-pmb {
+    display: block; width: 100%;
+    padding: 14px 30px; border-radius: 50px;
+    background: #ff7700; color: #fff;
+    font-family: 'Orbitron', sans-serif; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.12em; text-decoration: none;
+    box-shadow: 0 4px 20px rgba(255,98,0,0.928); transition: all 0.25s;
+    margin-bottom: 14px; border: none; cursor: pointer;
+  }
+  .btn-pmb:hover { transform: translateY(-2px); }
+  .btn-show-score {
+    display: block; width: 100%;
+    padding: 14px 30px; border-radius: 50px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--navy);
+    font-family: 'Orbitron', sans-serif; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.12em; border: none; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(201,146,42,0.4); transition: all 0.25s;
+    opacity: 0.35; pointer-events: none;
+  }
+  .btn-show-score.unlocked { opacity: 1; pointer-events: all; }
+  .btn-show-score.unlocked:hover { transform: translateY(-2px); }
+
+  /* ─── PARTICLES & DECOR ─── */
+  .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .particle {
+    position: absolute; width: 2px; height: 2px;
+    background: var(--blue-glow); border-radius: 50%; opacity: 0;
+    animation: float-up linear infinite;
+  }
+  @keyframes float-up {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+  }
+  .scanline {
+    position: fixed; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(45,106,255,0.4) 50%, transparent 100%);
+    animation: scan 6s linear infinite; pointer-events: none; z-index: 99;
+  }
+  @keyframes scan { from { top: 0; } to { top: 100vh; } }
+  .corner { position: fixed; width: 50px; height: 50px; pointer-events: none; z-index: 10; opacity: 0.4; }
+  .corner-tl { top: 16px; left: 16px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+  .corner-tr { top: 16px; right: 16px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+  .corner-bl { bottom: 16px; left: 16px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); }
+  .corner-br { bottom: 16px; right: 16px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+<div class="scanline"></div>
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- ══════ INTRO ══════ -->
+<section class="screen active" id="intro">
+  <img src="1000276974.jpg" alt="HMJ IT Logo" class="badge" onerror="this.style.display='none'">
+  <div class="title-main">MEMORY CHALLENGE</div>
+  <div class="title-sub">Himpunan Mahasiswa Informatika</div>
+  <div class="divider"></div>
+  <p class="desc">
+    Temukan <span>4 pasang foto</span> dari 4 logo<br>
+    Buka 2 kartu — jika cocok, kamu menang satu pasang.<br>
+    Jika tidak, kartu kembali tertutup. Selamat bermain!
+    <br><br>
+    <em style="font-size:0.85rem; color:var(--blue-glow);">Find the 4 matching pairs hidden in the cards!</em>
+  </p>
+  <button class="btn btn-primary" onclick="startGame()">▶ MULAI GAME</button>
+</section>
+
+<!-- ══════ GAME ══════ -->
+<section class="screen" id="game">
+  <div class="title-main" style="font-size:1.5rem; margin-bottom:4px;">MEMORY CHALLENGE</div>
+  <div class="title-sub" style="margin-bottom:18px; font-size:0.75rem;">HMJ IT · ITB WIDYA GAMA LUMAJANG</div>
+  <div class="hud">
+    <div class="hud-item">
+      <div class="hud-label">⏱ Waktu / Time</div>
+      <div class="hud-value" id="timer">00:00</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">🃏 Giliran / Moves</div>
+      <div class="hud-value" id="moves">0</div>
+    </div>
+    <div class="hud-item">
+      <div class="hud-label">✅ Pasangan / Pairs</div>
+      <div class="hud-value" id="pairs">0/4</div>
+    </div>
+  </div>
+  <div class="card-grid" id="card-grid"></div>
+</section>
+
+<!-- ══════ FOLLOW GATE 1 (setelah game, sebelum kuis 1) ══════ -->
+<section class="screen" id="gate1">
+  <div class="gate-box">
+    <div class="gate-icon">📸</div>
+    <div class="title-main" style="font-size:1.4rem;">HAMPIR SAMPAI!</div>
+    <div class="title-sub" style="font-size:0.7rem; margin-bottom:10px;">Satu Langkah Lagi</div>
+    <div class="divider"></div>
+    <p class="gate-desc" style="margin-top:14px;">
+      Untuk lanjut ke <strong>Kuis Tahap 1</strong>,<br>
+      silakan follow Instagram kami terlebih dahulu!
+    </p>
+    <a href="https://www.instagram.com/hmjinformatikawiga" target="_blank" class="gate-btn-ig" id="ig-btn-1" onclick="unlockNext('next-btn-1')">
+      📷 Follow akun organisasi kami
+    </a>
+    <button class="gate-btn-next" id="next-btn-1" onclick="showQuiz(1)">
+      ✅ Sudah Follow — Lanjut Kuis 1 →
+    </button>
+  </div>
+</section>
+
+<!-- ══════ QUIZ 1 ══════ -->
+<section class="screen" id="quiz1">
+  <div class="title-main" style="font-size:1.5rem; margin-bottom:4px;">KUIS IT — TAHAP 1</div>
+  <div class="title-sub" style="margin-bottom:22px; font-size:0.72rem;">HMJIT Knowledge · Round 1</div>
+  <div class="quiz-wrap">
+    <div class="quiz-progress" id="quiz-progress-1"></div>
+    <div class="quiz-card">
+      <div class="quiz-q-num" id="quiz-q-num-1">Soal 1 / 10</div>
+      <div class="quiz-question" id="quiz-question-1">—</div>
+      <div class="quiz-options" id="quiz-options-1"></div>
+      <div class="quiz-feedback" id="quiz-feedback-1"></div>
+      <div class="quiz-score-bar">
+        <span>Skor sementara:</span>
+        <span id="quiz-current-score-1">0 / 0</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FOLLOW GATE 2 (setelah kuis 1, sebelum kuis 2) ══════ -->
+<section class="screen" id="gate2">
+  <div class="gate-box">
+    <div class="gate-icon">🎯</div>
+    <div class="title-main" style="font-size:1.4rem;">KUIS 1 SELESAI!</div>
+    <div class="title-sub" style="font-size:0.7rem; margin-bottom:10px;">Lanjut ke Tahap 2</div>
+    <div class="divider"></div>
+    <div class="result-stat" style="margin: 14px 0 6px;">
+      <div class="label">Skor Kuis 1</div>
+      <div class="value" id="gate2-score">—</div>
+    </div>
+    <p class="gate-desc">
+      Mantap! Sekarang follow lagi untuk<br>lanjut ke <strong>Kuis Tahap 2</strong>!
+    </p>
+    <a href="https://www.instagram.com/itbwigalumajang" target="_blank" class="gate-btn-ig" id="ig-btn-2" onclick="unlockNext('next-btn-2')">
+      📷 Follow akun kampus kami
+    </a>
+    <button class="gate-btn-next" id="next-btn-2" onclick="showQuiz(2)">
+      ✅ Sudah Follow — Lanjut Kuis 2 →
+    </button>
+  </div>
+</section>
+
+<!-- ══════ QUIZ 2 ══════ -->
+<section class="screen" id="quiz2">
+  <div class="title-main" style="font-size:1.5rem; margin-bottom:4px;">KUIS IT — TAHAP 2</div>
+  <div class="title-sub" style="margin-bottom:22px; font-size:0.72rem;">HMJIT Knowledge · Round 2</div>
+  <div class="quiz-wrap">
+    <div class="quiz-progress" id="quiz-progress-2"></div>
+    <div class="quiz-card">
+      <div class="quiz-q-num" id="quiz-q-num-2">Soal 1 / 10</div>
+      <div class="quiz-question" id="quiz-question-2">—</div>
+      <div class="quiz-options" id="quiz-options-2"></div>
+      <div class="quiz-feedback" id="quiz-feedback-2"></div>
+      <div class="quiz-score-bar">
+        <span>Skor sementara:</span>
+        <span id="quiz-current-score-2">0 / 0</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ PMB GATE (setelah kuis 2) ══════ -->
+<section class="screen" id="pmb-gate">
+  <div class="pmb-gate-box">
+    <div class="gate-icon">🏫</div>
+    <div class="title-main" style="font-size:1.4rem;">KUIS 2 SELESAI!</div>
+    <div class="title-sub" style="font-size:0.7rem; margin-bottom:10px;">Satu Langkah Terakhir</div>
+    <div class="divider"></div>
+    <p class="pmb-gate-desc" style="margin-top:14px;">
+      Kunjungi link <strong>PMB ITB Widya Gama</strong> terlebih dahulu,<br>
+      lalu kembali ke halaman ini untuk melihat nilai akhirmu!
+    </p>
+    <a href="https://pmb.itbwigalumajang.ac.id/" target="_blank" class="btn-pmb" id="pmb-btn" onclick="unlockScore()">
+      🏫 Kunjungi Link PMB Wiga
+    </a>
+    <button class="btn-show-score" id="show-score-btn" onclick="showFinish()">
+      🏆 Lihat Nilai Akhir →
+    </button>
+  </div>
+</section>
+
+<!-- ══════ FINISH ══════ -->
+<section class="screen" id="finish">
+  <div class="finish-box">
+    <div class="finish-trophy">🏆</div>
+    <div class="title-main" style="font-size:1.6rem;">LUAR BIASA!</div>
+    <div class="title-sub" style="font-size:0.7rem; margin-bottom:10px;">Outstanding Performance</div>
+    <div class="divider"></div>
+    <p style="color:var(--gray); font-size:1rem; line-height:1.7; margin-bottom:16px;">
+      Kamu telah menyelesaikan Challenge dari<br>
+      <strong style="color:var(--blue-glow);">Himpunan Mahasiswa Jurusan Informatika</strong>
+    </p>
+    <div class="result-stat">
+      <div class="label">Skor Kuis 1</div>
+      <div class="value" id="final-score-1">—</div>
+    </div>
+    <div class="result-stat">
+      <div class="label">Skor Kuis 2</div>
+      <div class="value" id="final-score-2">—</div>
+    </div>
+    <div class="result-stat" style="background:rgba(45,106,255,0.08); border-radius:10px; padding:10px;">
+      <div class="label">⭐ Total Nilai Akhir</div>
+      <div class="value" id="final-total" style="font-size:2.6rem; color:var(--gold-light);">—</div>
+    </div>
+    <div class="divider"></div>
+    <a href="https://pmb.itbwigalumajang.ac.id/" target="_blank" class="finish-pmb">
+      link pmb wiga? klik disini
+    </a>
+    <div class="finish-btn-row">
+      <a href="https://www.instagram.com/hmjinformatikawiga" target="_blank" class="finish-ig">
+        📷 IG HMJ IT
+      </a>
+      <a href="https://www.instagram.com/hmjinformatikawiga" target="_blank" class="finish-ig">
+        ✨ Lihat Keajaiban
+      </a>
+    </div>
+    <button class="btn btn-primary" onclick="restartAll()" style="width:100%; font-size:0.7rem; padding:12px 24px;">
+      🔄 Main Lagi
+    </button>
+  </div>
+</section>
+
+<script>
+/* ══════ PARTICLES ══════ */
+(function(){
+  const c = document.getElementById('particles');
+  for(let i=0;i<28;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left:${Math.random()*100}%;
+      width:${1+Math.random()*3}px;
+      height:${1+Math.random()*3}px;
+      animation-duration:${6+Math.random()*14}s;
+      animation-delay:${Math.random()*10}s;
+      background:${Math.random()>0.5?'#4d9fff':'#c9922a'};
+    `;
+    c.appendChild(p);
+  }
+})();
+
+/* ══════ PHOTOS ══════ */
+const PHOTOS = [
+  { id:1, src:'HMJIT.png',  name:'HMJIT' },
+  { id:2, src:'HMJM.jpeg',  name:'HMJM'  },
+  { id:3, src:'HMJA.jpeg',  name:'HMJA'  },
+  { id:4, src:'wiga.jpeg',  name:'WIGA'  },
+];
+
+/* ══════ QUIZ DATA ══════ */
+const QUIZ1 = [
+  { q:"Apa nama kampus terbesar di kabupaten Lumajang?", opts:["Universitas Jember","Universitas Lumajang","Institut Teknologi dan Bisnis Widya Gama Lumajang","Politeknik Lumajang"], ans:2 },
+  { q:"Di kota manakah ITB Widya Gama berada?", opts:["Bandung","Jakarta","Lumajang","Jember"], ans:2 },
+  { q:"Ada berapa Program Studi di ITB WIGA LUMAJANG?", opts:["1","2","3","4"], ans:3 },
+  { q:"Salah satu program studi di ITB Widya Gama Lumajang adalah?", opts:["Kedokteran","Hukum","Pendidikan","Informatika"], ans:3 },
+  { q:"Manakah salah satu Organisasi Kemahasiswaan di ITB WIGA Lumajang?", opts:["Memasak","Pramuka","Himpunan Mahasiswa Jurusan Informatika (HMJ-IT)","OSIS"], ans:2 },
+  { q:"Ilmu yang mempelajari tentang komputer, pembuatan aplikasi, dan bagaimana teknologi bisa mempermudah hidup manusia disebut jurusan apa?", opts:["Manajemen","Magister Manajemen","Informatika","Akuntansi"], ans:2 },
+  { q:"Mana dari aplikasi berikut ini yang BUKAN merupakan media sosial?", opts:["TikTok","Microsoft Excel","Instagram","Facebook"], ans:1 },
+  { q:"Apa sebutan untuk program jahat yang bisa membuat komputer kita menjadi lambat atau mencuri data?", opts:["Aplikasi Chatting","Virus Komputer","Anti Virus","Sistem Operasi"], ans:1 },
+  { q:"Perangkat komputer yang bisa dilipat, mudah dibawa ke mana-mana, dan memiliki baterai sendiri disebut?", opts:["PC Desktop","Proyektor","Flashdisk","Laptop"], ans:3 },
+  { q:"Perangkat keras komputer yang memiliki banyak tombol dan berfungsi untuk mengetik huruf atau angka disebut?", opts:["Keyboard","Printer","Monitor","Mouse"], ans:0 },
+];
+
+const QUIZ2 = [
+  { q:"Organisasi yang menjadi wadah aspirasi mahasiswa ditingkat kampus adalah?", opts:["UKM","BEM","HMJ","Kemahasiswaan"], ans:1 },
+  { q:"Tujuan utama mahasiswa mengikuti UKM adalah?", opts:["GABUT","Tambah nilai","Mengembangkan minat dan bakat","Menggant jam akademik"], ans:2 },
+  { q:"HMJ adalah sngkatan dari?", opts:["Himpunan Mahasiwa Janggal","Himpunan Mahasiswa Jawa ","Himpunan mahasiswa Jurusan","Himpunan Mahasiswa Jaringan"], ans:2 },
+  { q:"Jika ingin meingkatkan kemampuan bahasa asing dan publik speaking, UKM yang tepat adalah?", opts:["Rohis","Pengembangan Bahasa","KSPM","Parama"], ans:1 },
+  { q:"UKM mana kah yang paling sesuai untuk mahasiswa yang ingin belajar investasi dan pasar modal?", opts:["KSPM","Rohis","Parama","Tari"], ans:0 },
+  { q:"UKM Rohis bergerak dalam bidang?", opts:["Basket","Keagamaan Islam","Kesehatan","Kewirausahaan"], ans:1 },
+  { q:"Berapa jumlah ORWAMA yang ada di Widya Gama?", opts:["12","13","14","15"], ans:3 },
+  { q:"Fungsi utama Himpunan Mahasiswa Jurusan (HMJ) adalah?", opts:["Mengelola nilai mata kuliah","Menjadi wadah pengembangan mahasiswa sesuai prodi","Mengatur jadwal dosen","Mengelola keuagan kampus"], ans:1 },
+  { q:"Apa kepanjangan dari UKM dalam organisasi kemahasiswaan?", opts:["Unit Kegiatan Mahasiswa","Unit Kerja Mas-mas","Uit Kerja Masyarakat","Unit Kerja Maksa"], ans:0 },
+  { q:"Mahasiswa yang memiliki minat dibidang olahraga, bisa bergabung dengan?", opts:["BEM","HMJ","UKM olahraga","Pengembangan Bahasa"], ans:2 },
+];
+
+/* ══════ STATE ══════ */
+let timerInterval, startTime, elapsedSeconds = 0;
+let moves = 0, matched = 0;
+let flipped = [], locked = false;
+let quiz1Score = 0, quiz2Score = 0;
+let currentQuizIndex = 0;
+let activeQuizNum = 0;
+
+/* ══════ UTILS ══════ */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function unlockNext(btnId) {
+  setTimeout(() => {
+    const btn = document.getElementById(btnId);
+    if(btn) btn.classList.add('unlocked');
+  }, 300);
+}
+
+function unlockScore() {
+  setTimeout(() => {
+    const btn = document.getElementById('show-score-btn');
+    if(btn) btn.classList.add('unlocked');
+  }, 300);
+}
+
+/* ══════ GAME ══════ */
+function startGame(){
+  moves = 0; matched = 0; flipped = []; locked = false;
+  elapsedSeconds = 0; quiz1Score = 0; quiz2Score = 0;
+  clearInterval(timerInterval);
+  document.getElementById('timer').textContent = '00:00';
+  document.getElementById('moves').textContent = '0';
+  document.getElementById('pairs').textContent = '0/4';
+
+  // reset gate buttons
+  document.getElementById('next-btn-1').classList.remove('unlocked');
+  document.getElementById('next-btn-2').classList.remove('unlocked');
+  document.getElementById('show-score-btn').classList.remove('unlocked');
+
+  let deck = [...PHOTOS, ...PHOTOS].map((p,i) => ({...p, uid:i}));
+  deck = deck.sort(() => Math.random() - 0.5);
+
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = '';
+  deck.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.id = p.id;
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face card-back">
+          <div class="card-back-logo">TEBAK<br>LOGO</div>
+        </div>
+        <div class="card-face card-front">
+          <img src="${p.src}" alt="${p.name}"
+               onerror="this.parentElement.style.background='linear-gradient(135deg,#1a3a8f,#2d6aff)';this.style.display='none'">
+        </div>
+      </div>`;
+    card.addEventListener('click', () => flipCard(card));
+    grid.appendChild(card);
+  });
+
+  show('game');
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+    const m = String(Math.floor(elapsedSeconds / 60)).padStart(2,'0');
+    const s = String(elapsedSeconds % 60).padStart(2,'0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+  }, 500);
+}
+
+function flipCard(card){
+  if(locked || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+  card.classList.add('flipped');
+  flipped.push(card);
+  if(flipped.length === 2) checkMatch();
+}
+
+function checkMatch(){
+  locked = true;
+  moves++;
+  document.getElementById('moves').textContent = moves;
+  const [a, b] = flipped;
+  if(a.dataset.id === b.dataset.id){
+    a.classList.add('matched'); b.classList.add('matched');
+    matched++;
+    document.getElementById('pairs').textContent = `${matched}/4`;
+    flipped = []; locked = false;
+    if(matched === 4) endGame();
+  } else {
+    setTimeout(() => {
+      a.classList.add('shake'); b.classList.add('shake');
+      setTimeout(() => {
+        a.classList.remove('flipped','shake');
+        b.classList.remove('flipped','shake');
+        flipped = []; locked = false;
+      }, 450);
+    }, 700);
+  }
+}
+
+function endGame(){
+  clearInterval(timerInterval);
+  show('gate1');
+}
+
+/* ══════ QUIZ ══════ */
+function showQuiz(num){
+  activeQuizNum = num;
+  currentQuizIndex = 0;
+  if(num === 1) quiz1Score = 0;
+  else quiz2Score = 0;
+
+  buildProgress(num);
+  loadQuestion(num);
+  show('quiz' + num);
+}
+
+function buildProgress(num){
+  const bar = document.getElementById(`quiz-progress-${num}`);
+  bar.innerHTML = '';
+  const questions = num === 1 ? QUIZ1 : QUIZ2;
+  questions.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'quiz-dot' + (i === 0 ? ' current' : '');
+    d.id = `qdot-${num}-${i}`;
+    bar.appendChild(d);
+  });
+}
+
+function loadQuestion(num){
+  const questions = num === 1 ? QUIZ1 : QUIZ2;
+  const q = questions[currentQuizIndex];
+  const score = num === 1 ? quiz1Score : quiz2Score;
+
+  document.getElementById(`quiz-q-num-${num}`).textContent = `Soal ${currentQuizIndex+1} / ${questions.length}`;
+  document.getElementById(`quiz-question-${num}`).textContent = q.q;
+  document.getElementById(`quiz-feedback-${num}`).textContent = '';
+  document.getElementById(`quiz-feedback-${num}`).className = 'quiz-feedback';
+  document.getElementById(`quiz-current-score-${num}`).textContent = `${score} / ${currentQuizIndex}`;
+
+  const opts = document.getElementById(`quiz-options-${num}`);
+  opts.innerHTML = '';
+  q.opts.forEach((o,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = `${String.fromCharCode(65+i)}. ${o}`;
+    btn.onclick = () => answerQ(num, i, btn);
+    opts.appendChild(btn);
+  });
+}
+
+function answerQ(num, idx, btn){
+  const questions = num === 1 ? QUIZ1 : QUIZ2;
+  const q = questions[currentQuizIndex];
+  const allBtns = document.querySelectorAll(`#quiz-options-${num} .quiz-opt`);
+  allBtns.forEach(b => b.classList.add('disabled'));
+
+  const fb = document.getElementById(`quiz-feedback-${num}`);
+  if(idx === q.ans){
+    btn.classList.add('correct');
+    if(num === 1) quiz1Score++;
+    else quiz2Score++;
+    fb.textContent = '✓ Benar! Bagus sekali!';
+    fb.className = 'quiz-feedback ok';
+  } else {
+    btn.classList.add('wrong');
+    allBtns[q.ans].classList.add('correct');
+    fb.textContent = `✗ Salah. Jawaban: ${String.fromCharCode(65+q.ans)}`;
+    fb.className = 'quiz-feedback bad';
+  }
+
+  const score = num === 1 ? quiz1Score : quiz2Score;
+  document.getElementById(`quiz-current-score-${num}`).textContent = `${score} / ${currentQuizIndex+1}`;
+
+  document.getElementById(`qdot-${num}-${currentQuizIndex}`).classList.remove('current');
+  document.getElementById(`qdot-${num}-${currentQuizIndex}`).classList.add('done');
+
+  setTimeout(() => {
+    currentQuizIndex++;
+    if(currentQuizIndex < questions.length){
+      document.getElementById(`qdot-${num}-${currentQuizIndex}`)?.classList.add('current');
+      loadQuestion(num);
+    } else {
+      // Quiz selesai
+      if(num === 1){
+        document.getElementById('gate2-score').textContent = `${quiz1Score} / 10`;
+        show('gate2');
+      } else {
+        show('pmb-gate');
+      }
+    }
+  }, 1200);
+}
+
+/* ══════ FINISH ══════ */
+function showFinish(){
+  document.getElementById('final-score-1').textContent = `${quiz1Score} / 10`;
+  document.getElementById('final-score-2').textContent = `${quiz2Score} / 10`;
+  document.getElementById('final-total').textContent = `${quiz1Score + quiz2Score} / 20`;
+  show('finish');
+}
+
+function restartAll(){
+  quiz1Score = 0; quiz2Score = 0;
+  startGame();
+}
+</script>
+</body>
+</html>
